@@ -1,0 +1,128 @@
+{% extends "auctions/layout.html" %}
+{% load static %}
+
+{% block body %}
+    {% if error and not listing %}
+        <h2>N/A</h2>
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    {% if error and listing %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    {% if listing %}
+        <h2 style="text-align: center;">Listing: {{ listing.title }}</h2>
+
+        <div class="card w-75" style="margin: auto;">
+            <img width="900" height="auto" class="border border-secondary img-fluid card-img-top" src="{{ listing.image_url }}" alt="{{ listing.title }}">
+            <div class="card-body">
+                <p class="card-text">{{ listing.description }}</p>
+                <p class="card-text" style="font-weight: bold; font-size: larger;">Current Price: &nbsp;${{ listing.current_price }}</p>
+                <p class="card-text" style="font-weight: bold; font-size: larger;">Starting Price: ${{ listing.start_price }}</p>
+                <p class="card-text">
+                    {% if bids.count == 1 %}
+                        There is {{ bids.count }} bid
+                    {% else %}
+                        There are {{ bids.count }} bids
+                    {% endif %}
+                    {% if last_bid.user == user %}
+                        . Your bid is the current bid
+                    {% endif %}
+                </p>
+                <form action="{% url 'watchlist_add' listing_id=listing.id %}" method="post">
+                    {% csrf_token %}
+                    <button class="btn btn-primary w-25" type="submit" name="addw">Add to watchlist</button>
+                </form>
+                <br/>
+                <form action="{% url 'watchlist_remove' listing_id=listing.id %}" method="post">
+                    {% csrf_token %}
+                    <button class="btn btn-primary w-25" type="submit" name="remw">Remove from watchlist</button>
+                </form>
+                <br/>
+
+                {% if listing.is_active %}
+                    <form action="#", method="post">
+                        {% if user.is_authenticated and user != listing.user %}
+                            {% csrf_token %}
+                            <div class="w-25">
+                                {{ bid_form }}
+                            </div>
+                            <br/>
+                            <button class="btn btn-primary w-25" type="submit" name="bid">Place Bid</button>
+                        {% elif user.is_authenticated and user == listing.user %}
+                            {% csrf_token %}
+                            <button class="btn btn-primary w-25" type="submit" name="close">Close Auction</button>
+                        {% else %}
+                            <div class="alert alert-primary" role="alert">
+                                Please <a href="{% url 'login' %}" class="alert-link">log in</a> to bid on auctions.
+                            </div>
+                        {% endif %}
+                    </form>
+                    {% if last_bid.user == user %}
+                        <br/>
+                        <form action="{% url 'bid_remove' bid_id=last_bid.id %}" method="post">
+                            {% csrf_token %}
+                            <button class="btn btn-primary w-25" type="submit" name="remw">Remove Bid</button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <div class="alert alert-primary" role="alert">
+                        This auction is closed! {% if last_bid.user == user %} You won the auction! {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="w-25 p-3">
+            <h3 style="text-align: left;"><b>Details</b></h2>
+            <ul class="list-group">
+                <li class="list-group-item list-group-item-primary">Listed by: {{ listing.user }}</li>
+                {% if last_bid %}
+                    <li class="list-group-item list-group-item-primary">Last bid: ${{ last_bid.price }} made by {{ last_bid.user }} on {{ last_bid.creation_date }}</li>
+                {% else %}
+                    <li class="list-group-item list-group-item-primary">Last bid: No bids</li>
+                {% endif %}
+                <li class="list-group-item list-group-item-primary"><a href="{% url 'category_listings' category_id=listing.category.id %}">Category: {{ listing.category }}</a></li>
+            </ul>
+        </div>
+        <div style="margin: auto;" class="w-100 p-3 table-responsive text-nowrap">
+            <h3 style="text-align: left;"><b>Comments</b></h2>
+            <table class="table table-striped table-primary">
+                <thead>
+                    <tr>
+                        <th class="col-md-1" scope="col">User</th>
+                        <th class="col-md-1" scope="col">Post Date</th>
+                        <th class="col-md-6" scope="col">Content</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for comment in comments %}
+                        <tr>
+                            <td class="col-md-1">{{ comment.user }}</td>
+                            <td class="col-md-1">{{ comment.creation_date }}</td>
+                            <td class="col-md-6">{{ comment.content }}</td>
+                        <tr/>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3">No comments yet!</td>
+                        <tr/>    
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if user.is_authenticated and listing.user != user and listing.is_active %}
+                <h5>Post your comment:</h5>
+                <div class="form-group">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ comment_form.as_p }}
+                        <button class="btn btn-primary" type="submit" name="comment">Submit comment</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %} 
+{% endblock %}

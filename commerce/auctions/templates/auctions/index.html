@@ -1,0 +1,50 @@
+{% extends "auctions/layout.html" %}
+{% load static %}
+
+{% block body %}
+    <h2>Listings - {{ page_obj.paginator.num_pages }} Pages</h2>
+    <div>
+        <nav aria-label="Page navigation example">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page=1">First &laquo;</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.number }}">{{ page_obj.number }}</a></li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% for l in auctionlisting_list %}
+        <div class="col s12 m12 l12">
+            <div class="card">
+                <div class="card-content border border-secondary">
+                    <div class="row">
+                        <div class="col s12 m6 card-image">
+                            <img width="900" height="auto" class="border border-secondary img-fluid" src="{{ l.image_url }}">
+                        </div>
+                        <div class="col s12 m6">
+                            <br/>
+                            <h5 class="card-title">{{ l.title }}</h5>
+                            <p><b>Initial Price</b>: ${{ l.start_price }}</p>
+                            <p><b>Current Price</b>: ${{ l.current_price }}</p>
+                            <p><b>Description</b>: {{ l.description }}</p>
+                            <div class="alert alert-dark w-25" role="alert">
+                                The auction is: {% if l.is_active %} <span style="color:green;">Open</span> {% else %} <span style="color: red;">Close</span> {% endif %}
+                            </div>
+                            
+                            <form action="{% url 'listing' listing_id=l.id %}">
+                                <input type="submit" class="btn btn-secondary" value="Details" />
+                                <small><span class="border border-secondary">Posted on {{ l.creation_date }} by {{ l.user }}</span></small>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}

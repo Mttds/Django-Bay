@@ -1,0 +1,31 @@
+{% extends "auctions/layout.html" %}
+{% load static %}
+
+{% block body %}
+    <h2 style="text-align: center;">{{ user }}'s Watchlist</h2>
+    {% for w in watchlist %}
+        <div class="col s12 m12 l12">
+            <div class="card">
+                <div class="card-content border border-secondary">
+                    <div class="row">
+                        <div class="col s12 m6 card-image">
+                            <img width="900" height="auto" class="border border-secondary img-fluid" src="{{ w.image_url }}">
+                        </div>
+                        <div class="col s12 m6">
+                            <br/>
+                            <h5 class="card-title">{{ w.title }}</h5>
+                            <p><b>Description</b>: {{ w.description }}</p>
+                            <div class="alert alert-dark w-25" role="alert">
+                                The auction is: {% if l.is_active %} <span style="color:green;">Open</span> {% else %} <span style="color: red;">Close</span> {% endif %}
+                            </div>
+                            
+                            <form action="{% url 'listing' listing_id=w.id %}">
+                                <input type="submit" class="btn btn-secondary" value="Details" />
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}
